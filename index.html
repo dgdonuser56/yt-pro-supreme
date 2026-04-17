@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YouTube Pro Supreme</title>
+    <style>
+        :root { --red: #ff0000; --bg: #000; --card: #121212; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding-top: 100px; }
+        header { position: fixed; top: 0; width: 100%; background: #000; z-index: 1000; padding: 15px; border-bottom: 2px solid var(--red); }
+        .search-box { display: flex; gap: 10px; max-width: 500px; margin: 0 auto; }
+        input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; }
+        .s-btn { background: var(--red); border: none; color: white; padding: 0 20px; border-radius: 25px; font-weight: bold; }
+        #list { padding: 10px; }
+        .v-card { margin-bottom: 25px; background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; }
+        .v-thumb img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .v-title { padding: 12px; font-size: 14px; font-weight: 500; }
+        #player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: none; flex-direction: column; }
+        iframe { width: 100%; aspect-ratio: 16/9; border: none; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="search-box">
+            <input type="text" id="v-search" placeholder="Search Crime Patrol...">
+            <button class="s-btn" onclick="fetchVideos(true)">GO</button>
+        </div>
+    </header>
+    <div id="list"></div>
+    <div id="player">
+        <div style="padding:15px; text-align:right;"><button onclick="closeV()" style="color:white; background:var(--red); border:none; padding:8px 20px; border-radius:20px;">✕ CLOSE</button></div>
+        <div id="v-frame"></div>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyAhuhrfRwEH9R2bBCZmKxy4QF7XzC4lNCw";
+        let query = "Crime Patrol Full Episodes";
+
+        async function fetchVideos(isNew = false) {
+            const val = document.getElementById('v-search').value;
+            if(val) query = val;
+            try {
+                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(query)}&type=video&key=${API_KEY}`);
+                const data = await res.json();
+                const container = document.getElementById('list');
+                container.innerHTML = "";
+                data.items.forEach(v => {
+                    container.innerHTML += `
+                        <div class="v-card" onclick="playV('${v.id.videoId}')">
+                            <div class="v-thumb"><img src="${v.snippet.thumbnails.high.url}"></div>
+                            <div class="v-title">${v.snippet.title}</div>
+                        </div>`;
+                });
+            } catch (e) { console.log(e); }
+        }
+        function playV(id) {
+            document.getElementById('v-frame').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`;
+            document.getElementById('player').style.display = 'flex';
+        }
+        function closeV() {
+            document.getElementById('player').style.display = 'none';
+            document.getElementById('v-frame').innerHTML = "";
+        }
+        window.onload = () => fetchVideos();
+    </script>
+</body>
+</html>
